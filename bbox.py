@@ -4,15 +4,25 @@ from __future__ import print_function
 
 from http import cookies
 import argparse
-import httplib2
 import json
 import logging
 import os
 import urllib
-import urllib3
 from urllib.parse import urlparse
 from urllib import parse
 import sys
+import requests
+
+#BBox has a bad dhparam despite update in February 2022
+requests.packages.urllib3.disable_warnings()
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
+try:
+    requests.packages.urllib3.contrib.pyopenssl.DEFAULT_SSL_CIPHER_LIST += 'HIGH:!DH:!aNULL'
+except AttributeError:
+    # no pyopenssl support used / needed / available
+    pass
+# End of bloc specific for bbox
+
 
 class BBoxAPI:
     def __init__ (self, logger, url, password):
@@ -58,16 +68,23 @@ class BBoxAPI:
             body = urllib.parse.urlencode (data)
         else:
             body = None
-        #print(body)
         if self.cookie is not None:
             headers = dict ((('Cookie', name + '=' + morsel.coded_value) for (name, morsel) in self.cookie.items ()))
         else:
             headers = {}
 
-        connection = httplib2.Http (self.host)
-        (status, response) = connection.request ('https://' + self.host + '/' + path, method, body, headers)
+        if method == "GET":
+            request = requests.get('https://' + self.host + '/' + path, data=body, headers=headers)
+        elif method == "POST":
+            request = requests.post('https://' + self.host + '/' + path, data=body, headers=headers)
+        elif method == "PUT":
+            request = requests.put('https://' + self.host + '/' + path, data=body, headers=headers)
+        elif method == "DELETE":
+            request = requests.delete('https://' + self.host + '/' + path, data=body, headers=headers)
+        status = request.headers
+        response = request.content
 
-        if status['status'] != '200':
+        if request.status_code != 200:
             self.logger.warning ('call {0} {1} returned {2} and {3} !!!'.format (method, path, status, response))
             return None, None
         return status, response
