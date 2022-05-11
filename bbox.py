@@ -13,7 +13,7 @@ from urllib import parse
 import sys
 import requests
 
-#BBox has a bad dhparam despite update in February 2022
+#BBox has a bad dhparam despite update in April 2022
 requests.packages.urllib3.disable_warnings()
 requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
 try:
@@ -73,14 +73,7 @@ class BBoxAPI:
         else:
             headers = {}
 
-        if method == "GET":
-            request = requests.get('https://' + self.host + '/' + path, data=body, headers=headers)
-        elif method == "POST":
-            request = requests.post('https://' + self.host + '/' + path, data=body, headers=headers)
-        elif method == "PUT":
-            request = requests.put('https://' + self.host + '/' + path, data=body, headers=headers)
-        elif method == "DELETE":
-            request = requests.delete('https://' + self.host + '/' + path, data=body, headers=headers)
+        request = getattr(requests, method.lower()) ('https://' + self.host + '/' + path, data=body, headers=headers)
         status = request.headers
         response = request.content
 
@@ -97,7 +90,7 @@ class Config:
         else:
             data = {}
         self.password = data.get ('password', None)
-        self.url = data.get ('url', 'https://192.168.1.254')
+        self.url = data.get ('url', 'https://mabbox.bytel.fr')
 
 # Setup logging facility
 formatter = logging.Formatter ('%(levelname)s: %(message)s')
