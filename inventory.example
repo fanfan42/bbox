@@ -1,0 +1,42 @@
+[wifi enable=1 sched_enable=1 sched_start=7 sched_end=1 accesscontrol_enable=1 accesscontrol_start=0 accesscontrol_end=23 wps=0]
+# One Band wifi unified
+# BGU-WIFI id=24 passphrase= unified=1 radio=11bgn
+# Two Band wifi with specific 5GHz SSID 
+#2.4 GHz
+BGU-wifi id=24 passphrase= unified=2 radio=11bgn
+#5 GHz
+BGU-WIFI id=5 passphrase= unified=2 radio=11ac
+
+[host enable=1 macfilter=1 lan_router_ip=192.168.1.254 lan=192.168.1.0/24 led=0 dyndns=0 dhcp_subnet=192.168.1.124-192.168.1.142 dhcp_lease=86400]
+host-wifi macaddress=08:cc:27:c3:d9:9b ipaddress=192.168.1.24 macfilter=on
+bastion macaddress=b8:27:eb:f7:a5:f7 ipaddress=192.168.1.28
+file macaddress=08:69:69:69:69:69 ipaddress=192.168.1.40
+tv macaddress=cc:7e:e7:28:1f:49 ipaddress=192.168.1.30 access_control=on
+
+[fwv4 enable=1 gamer_mode=0 ping_responder=0]
+#General
+AllowUDPOut srcip={{host.conf.lan}} dstports=53,123,500,4500 protocols=udp
+AllowTCPOut srcip={{host.conf.lan}} dstports=22,80,443,3389,8080 protocols=tcp
+#Bastion
+AllowBastionIn dstip={{host.boko.ipaddress}} dstports=22 protocols=tcp
+#File Server
+AllowFileIn enable=0 srcip=109.134.133.62 dstip={{host.host-wifi.ipaddress}} dstports=22,445 protocols=tcp
+#Steam
+AllowSGTraffic srcip={{host.conf.lan}} dstports=27000:27100 protocols=udp
+AllowSGUDP srcip={{host.conf.lan}} dstports=4380 protocols=udp
+#Google Meets
+AllowGMeets srcip={{host.conf.lan}} dstports=19302:19309 protocols=udp
+#Whatsapp
+AllowWspTCP srcip={{host.conf.lan}} dstports=4244,5222,5223,5228,5242 protocols=tcp
+AllowWspUDP srcip={{host.conf.lan}} dstports=3478,45395 protocols=udp
+AllowWspTCPUDP srcip={{host.conf.lan}} dstports=59234,50318 protocols=tcp,udp 
+#DenyAll
+DenyAll protocols=tcp,udp action=Drop
+
+[fwv6 enable=1]
+DenyAll protocols=tcp,udp action=Drop
+
+[nat enable=1 dmz=0 upnp=0]
+Bastion protocol=tcp externalport=2222 internalip={{host.bastion.ipaddress}} internalport={{fwv4.AllowBastionIn.dstports}}
+FileSSH enable=0 protocol=tcp externalip={{fwv4.AllowFileIn.srcip}} internalip={{host.file.ipaddress}} internalport=22
+FileSAMBA enable=0 protocol=tcp externalip={{fwv4.AllowFileIn.srcip}} internalip={{host.file.ipaddress}} internalport=445
