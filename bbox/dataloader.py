@@ -44,7 +44,7 @@ class DataLoader:
         '''
         internal method which translates the pre parsed RawConfigParser object in an Ansible like Inventory file
         '''
-        regex = re.compile(r'^{{\w+(\-\w+)*\.\w+(\-\w+)*\.\w+(\-\w+)*}}$')
+        regex = re.compile(r'{{(?P<section>\w+(\-\w+)*)\.(?P<name>\w+(\-\w+)*)\.(?P<attrib>\w+(\-\w+)*)}}')
         for raw_section,entries in unformatted_data.items():
             section = raw_section.split(' ')[0]
             self.data[section] = dict()
@@ -65,12 +65,16 @@ class DataLoader:
         Internal method which gets the real value of a templated value
         '''
         if re.match(regex, value):
-            tmp = value.strip('{}').split('.')
-            try:
-                return self.data[tmp[0]][tmp[1]][tmp[2]]
-            except KeyError:
-                self.logger.error('Templated value "%s" hasn\'t been declared before' % value)
-                raise
+            new_value = value
+            for imatch in re.finditer(regex, value):
+                tmpl = imatch.groupdict()
+                try:
+                    is_value = self.data[tmpl.get('section')][tmpl.get('name')][tmpl.get('attrib')]
+                    new_value = new_value.replace(imatch.group(), str(is_value))
+                except KeyError:
+                    self.logger.error('Templated value "%s" hasn\'t been declared before' % value)
+                    raise
+            return new_value
         return value
 
     def get_data(self):
