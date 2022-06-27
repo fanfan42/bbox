@@ -42,16 +42,10 @@ def deploy_inventory(args):
     logger, api = get_api_and_logger('~/.bbox.config')
     dl = DataLoader(logger, args.file)
     data = dl.get_data()
-    if args.limit is not None and args.limit not in data:
-        logger.error('Limit %s not in allowed sections:\n- wifi\n- host\n- fwv4\n- fwv6\n- nat' % args.limit)
     for section in data:
         if args.limit is None or section == args.limit:
-            try:
-                manager = getattr(sys.modules[__name__], section.capitalize() + 'Manager')(logger, api, data[section])
-                manager.deploy()
-            except AttributeError:
-                logger.error('Section %s is not in allowed sections:\n- wifi\n- host\n- fwv4\n- fwv6\n- nat' % section)
-                raise
+            manager = getattr(sys.modules[__name__], section.capitalize() + 'Manager')(logger, api, data[section])
+            manager.deploy()
                 
 def main():
     parser = argparse.ArgumentParser(description = 'Python3 CLI utility for Bouygues Telecom\'s BBox Miami Router API.')
@@ -65,7 +59,7 @@ def main():
 
     parser_apply = parsers.add_parser('apply', help = 'deploy from inventory file')
     parser_apply.add_argument('file', action = 'store', help = 'Inventory file path', metavar = 'FILE')
-    parser_apply.add_argument('-l', '--limit', required = False, action = 'store', help = 'limit apply to a section of the inventory', metavar = 'SECTION')
+    parser_apply.add_argument('-l', '--limit', required = False, action = 'store', choices=['wifi','host','fwv4','fwv6','nat'], help = 'limit apply to a section of the inventory', metavar = 'SECTION')
     parser_apply.set_defaults(func = deploy_inventory)
 
     args = parser.parse_args()
