@@ -105,7 +105,7 @@ class WifiManager:
 
     def deploy(self):
         '''
-        Method which deploys wifis in inventory file
+        Method which deploys wifis from inventory file
         '''
         for wifi in self.wifis:
             oWiFi = WiFi(ssid = wifi, **self.wifis[wifi])

@@ -1,8 +1,6 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import json
-
 from dataclasses import dataclass, asdict
 
 @dataclass(slots = True)
@@ -11,6 +9,7 @@ class Scheduler:
     This class creates a Scheduler object
     PARAMS:
         all params in https://api.bbox.fr/doc/apirouter/index.html#api-Wi_Fi-post_v1_wireless_id
+        or https://api.bbox.fr/doc/apirouter/index.html#api-ParentalControl-post_v1_parentalcontrol_scheduler
     '''
     start: str
     end: str
@@ -20,12 +19,12 @@ class Scheduler:
         self.start = self.start.replace('_', ' ')
         self.end = self.end.replace('_', ' ')
 
-    def create(self, logger, api):
+    def create(self, logger, api, service, path):
         '''
         Method which create a Wifi Scheduler rule
         '''
-        logger.info('Wifi Scheduler Rule will be created, start %s | stop %s' % (self.start, self.end))
-        api.get_str('POST', '/wireless/scheduler?btoken=', asdict(self))
+        logger.info('%s Scheduler Rule will be created, start %s | stop %s' % (service, self.start, self.end))
+        api.get_str('POST', '/%s/scheduler?btoken=' % path, asdict(self))
 
 class WifischedulerManager:
     '''
@@ -54,4 +53,4 @@ class WifischedulerManager:
         self.api.get_str('POST', '/wireless/scheduler?btoken=', {'enable':0,'start':'Sunday 0:00','end':'Saturday 23:59'})
         for rule in self.rules:
             oRule = Scheduler(**self.rules[rule])
-            oRule.create(self.logger, self.api)
+            oRule.create(self.logger, self.api, 'Wifi', 'wireless')
