@@ -1,4 +1,4 @@
-[wifi enable=1 sched_enable=1 sched_start=7 sched_end=1 accesscontrol_enable=1 accesscontrol_start=0 accesscontrol_end=23 wps=0]
+[wifi enable=1 wps=0]
 # One Band wifi unified
 # BGU-WIFI id=24 passphrase= unified=1 radio=11bgn
 # Two Band wifi with specific 5GHz SSID 
@@ -42,3 +42,13 @@ DenyAll protocols=tcp,udp action=Drop
 Bastion protocol=tcp externalport=2222 internalip={{host.bastion.ipaddress}} internalport={{fwv4.AllowBastionIn.dstports}}
 FileSSH enable=0 protocol=tcp externalip={{fwv4.AllowFileIn.srcip}} internalip={{host.file.ipaddress}} internalport=22
 FileSAMBA enable=0 protocol=tcp externalip={{fwv4.AllowFileIn.srcip}} internalip={{host.file.ipaddress}} internalport=445
+
+# Schedule the time when wifi is off
+[wifischeduler enable=1]
+1 start=Monday_1:00 end=Monday_7:00
+2 start=Tuesday_1:00 end=Tuesday_7:00
+3 start=Wednesday_1:00 end=Wednesday_7:00
+4 start=Thursday_1:00 end=Thursday_7:00
+5 start=Friday_1:00 end=Friday_7:00
+6 start=Saturday_1:00 end=Saturday_7:00
+7 start=Sunday_1:00 end=Sunday_7:00

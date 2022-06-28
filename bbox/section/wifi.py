@@ -87,60 +87,21 @@ class WiFi:
 class WifiManager:
     '''
     This class manages WiFi objects
-    Also, sets the Wifi state
-    Also, sets the WiFi scheduler state and rules, sets the Parental Access Control state and rules 
+    Also, sets the Wifi state and WPS state
+    PARAMS:
+        logger, (MANDATORY), a logger object to print informational object
+        api, (MANDATORY), an API object to control the bbox
+        wifis, a dict containing wifi configuration to apply
     '''
-    __slots__ = ['logger', 'api', 'days', 'conf', 'wifis']
+    __slots__ = ['logger', 'api', 'conf', 'wifis']
 
     def __init__(self, logger, api, wifis):
         self.logger = logger
         self.api = api
-        self.days = ('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')
         self.conf = wifis.pop('conf')
         self.wifis = wifis
         self.logger.info('Update WiFi and WPS states: WiFi : %i | WPS : %i' % (self.conf['enable'], self.conf['wps']))
         self.api.get_str('PUT', '/wireless', {'enable':self.conf['enable'],'enable':self.conf['wps']})
-        self.conf_accesscontrol()
-        self.conf_scheduler()
-
-    def conf_accesscontrol(self):
-        '''
-        Method which manages the state and rules of Parental Access Control
-        '''
-        self.logger.info('Update Parental Access Control state: %i' % self.conf['accesscontrol_enable'])
-        self.api.get_str('PUT', '/parentalcontrol', {'enable': self.conf['accesscontrol_enable']})
-        self.logger.info('Create Parental Access Control rules')
-        for day in self.days:
-            for hour in range(0, 24):
-                enable = 0
-                if self.conf['accesscontrol_start'] < self.conf['accesscontrol_end']:
-                    if hour >= self.conf['accesscontrol_start'] and hour < self.conf['accesscontrol_end']:
-                        enable = 1
-                else:
-                    if hour >= self.conf['accesscontrol_start'] or hour < self.conf['accesscontrol_end']:
-                        enable = 1
-                self.logger.info('%s %i:00 state: %i' % (day, hour, enable))
-                self.api.get_str('POST', '/parentalcontrol/scheduler?btoken=', {'enable':enable,'start':day+' '+str(hour)+':00','end':day+' '+str(hour+1)+':00'})
-
-
-    def conf_scheduler(self):
-        '''
-        Method which manages WiFi scheduler state and rules
-        '''
-        self.logger.info('Update WiFi scheduler state: %i' % self.conf['sched_enable'])
-        self.api.get_str('PUT', '/wireless/scheduler', {'enable': self.conf['sched_enable']})
-        self.logger.info('Create Scheduler rules')
-        for day in self.days:
-            for hour in range(0, 24):
-                enable = 1
-                if self.conf['sched_start'] < self.conf['sched_end']:
-                    if hour >= self.conf['sched_start'] and hour < self.conf['sched_end']:
-                        enable = 0
-                else:
-                    if hour >= self.conf['sched_start'] or hour < self.conf['sched_end']:
-                        enable = 0
-                self.logger.info('%s %i:00 state: %i' % (day, hour, enable))
-                self.api.get_str('POST', '/wireless/scheduler?btoken=', {'enable':enable,'start':day+' '+str(hour)+':00','end':day+' '+str(hour+1)+':00'})
 
     def deploy(self):
         '''

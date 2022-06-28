@@ -14,6 +14,7 @@ from bbox.section.fwv4 import Fwv4Manager
 from bbox.section.fwv6 import Fwv6Manager
 from bbox.section.nat import NatManager
 from bbox.section.wifi import WifiManager
+from bbox.section.wifischeduler import WifischedulerManager
 
 def get_api_and_logger(config_file):
     '''
@@ -59,7 +60,7 @@ def main():
 
     parser_apply = parsers.add_parser('apply', help = 'deploy from inventory file')
     parser_apply.add_argument('file', action = 'store', help = 'Inventory file path', metavar = 'FILE')
-    parser_apply.add_argument('-l', '--limit', required = False, action = 'store', choices=['wifi','host','fwv4','fwv6','nat'], help = 'limit apply to a section of the inventory', metavar = 'SECTION')
+    parser_apply.add_argument('-l', '--limit', required = False, action = 'store', choices=['wifi','host','fwv4','fwv6','nat','wifischeduler'], help = 'limit apply to a section of the inventory', metavar = 'SECTION')
     parser_apply.set_defaults(func = deploy_inventory)
 
     args = parser.parse_args()
