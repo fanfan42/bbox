@@ -75,21 +75,24 @@ class NatManager:
     __slots__ = ['logger', 'api', 'conf', 'rules']
 
     def __init__(self, logger, api, rules):
+        convert = ('disabled', 'enabled')
         self.logger = logger
         self.api = api
         self.conf = rules.pop('conf')
         self.rules = rules
-        self.logger.info('Update NAT state: %i' % self.conf['enable'])
+        self.logger.info('Update NAT state: %s' % convert[self.conf['enable']])
         self.api.get_str('PUT', '/nat/rules', {'enable':self.conf['enable']})
-        self.logger.info('Update UPnP state: %i' % self.conf['upnp'])
+        self.logger.info('Update UPnP state: %s' % convert[self.conf['upnp']])
         self.api.get_str('PUT', '/upnp/igd', {'enable': self.conf['upnp']})
-        self.logger.info('Update DMZ state: %i' % self.conf['dmz'])
+        self.logger.info('Update DMZ state: %s' % convert[self.conf['dmz']])
         self.api.get_str('PUT', '/nat/dmz', {'enable':self.conf['dmz']})
 
     def deploy(self):
         '''
         Method which creates/updates NAT rules
         '''
+        self.logger.info('---------- SECTION NAT ----------')
         for rule in self.rules:
             oRule = NATRule(description = rule, **self.rules[rule])
             oRule.create_or_update(self.logger, self.api)
+        self.logger.info('---------- END SECTION NAT ----------')

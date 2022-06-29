@@ -47,15 +47,16 @@ class Fwv4Manager:
     __slots__ = ['logger', 'api', 'conf', 'rules']
 
     def __init__(self, logger, api, rules):
+        convert = ('disabled', 'enabled')
         self.logger = logger
         self.api = api
         self.conf = rules.pop('conf')
         self.rules = rules
-        self.logger.info('Update Firewallv4 state: %i' % self.conf['enable'])
+        self.logger.info('Update Firewallv4 state: %s' % convert[self.conf['enable']])
         self.api.get_str('PUT', '/firewall', {'enable':self.conf['enable']})
-        self.logger.info('Update Ping responder state: %i' % self.conf['ping_responder'])
+        self.logger.info('Update Ping responder state: %s' % convert[self.conf['ping_responder']])
         self.api.get_str('PUT', '/firewall/pingresponder', {'enable': self.conf['ping_responder']})
-        self.logger.info('Update Gamer Mode state: %d' % self.conf['gamer_mode'])
+        self.logger.info('Update Gamer Mode state: %s' % convert[self.conf['gamer_mode']])
         self.api.get_str('PUT', '/firewall/gamermode', {'enable':self.conf['gamer_mode']})
 
     def delete_all(self):
@@ -73,8 +74,12 @@ class Fwv4Manager:
         Method which creates an IPv4 firewall rule. Each rule is ordered like in the inventory file
         '''
         i = 1
+
+        self.logger.info('---------- SECTION Firewall IPv4 ----------')
+        self.logger.info('Remove all previous rules in Firewall IPv4')
         self.delete_all()
         for rule in self.rules:
             oRule = FWv4(description = rule, order = i, **self.rules[rule])
             oRule.create(self.logger, self.api)
             i += 1
+        self.logger.info('---------- END SECTION Firewall IPv4 ----------')

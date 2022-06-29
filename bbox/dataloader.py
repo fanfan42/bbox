@@ -21,14 +21,14 @@ class DataLoader:
         self.logger = logger
         self.data = dict()
         if not os.path.isfile(inventory):
-            self.logger.error("Invalid filename: '%s'" % inventory)
+            self.logger.error("DataLoader : invalid filename: '%s'" % inventory)
             raise
         parser = RawConfigParser(delimiters=(' '))
         parser.optionxform = str
         try:
             parser.read(inventory)
         except ParsingError:
-            self.logger.error("INI Inventory cannot be parsed")
+            self.logger.error("DataLoader : INI Inventory cannot be parsed")
             raise
         self._refine_data(parser._sections)
 
@@ -72,7 +72,7 @@ class DataLoader:
                     is_value = self.data[tmpl.get('section')][tmpl.get('name')][tmpl.get('attrib')]
                     new_value = new_value.replace(imatch.group(), str(is_value))
                 except KeyError:
-                    self.logger.error('Templated value "%s" hasn\'t been declared before' % value)
+                    self.logger.error('DataLoader : Templated value "%s" hasn\'t been declared before' % value)
                     raise
             return new_value
         return value
@@ -98,7 +98,7 @@ class Config:
             try:
                 parser.read(path)
             except ParsingError:
-                print("INI Inventory cannot be parsed")
+                print("Config : INI config file in ~/.bbox.config  cannot be parsed")
                 raise
             self.password = parser._sections['info']['password']
             if self.password == '':

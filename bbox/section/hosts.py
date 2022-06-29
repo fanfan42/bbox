@@ -2,7 +2,6 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import json
-import ipaddress
 
 from dataclasses import dataclass,asdict
 
@@ -49,10 +48,10 @@ class Host:
         else:
             logger.info('Host %s will be created' % self.hostname)
             api.get_str('POST', '/dhcp/clients?btoken=', self.get_query_host(True))
-        if self.macfilter == 'on':
+        if self.macfilter == 1:
             self.toggle_macfilter(logger, api)
-        if self.access_control == 'on':
-            logger.info('Add %s in parental access control' % self.hostname)
+        if self.access_control == 1:
+            logger.info('Add %s in parental access control, state : enabled' % self.hostname)
             api.get_str('PUT', '/parentalcontrol/hosts', {'enable':1,'macaddress':self.macaddress})
 
     def toggle_macfilter(self, logger, api):
@@ -60,7 +59,7 @@ class Host:
         Method which allows/denies access to Wifi for an host
         '''
         global cache_nat
-        convert = {'on':1,'off':0}
+        convert = ('disabled', 'enabled')
 
         if not cache_nat:
             cache_nat = api.get_str('GET', '/wireless/acl').decode('utf-8').strip('[]')
@@ -68,13 +67,13 @@ class Host:
         for rule in rules:
             if rule['macaddress'] == self.macaddress:
                 if rule['enable'] != convert[self.macfilter]:
-                    logger.info('Updating Wifi mac filtering on host %s - state: %s' % (self.hostname, self.macfilter))
-                    api.get_str('PUT', '/wireless/acl/rules/%s' % rule['id'], {'enable': convert[self.macfilter], 'macaddress': self.macaddress})
+                    logger.info('Updating Wifi mac filtering on host %s - state: %s' % (self.hostname, convert[self.macfilter]))
+                    api.get_str('PUT', '/wireless/acl/rules/%s' % rule['id'], {'enable': self.macfilter, 'macaddress': self.macaddress})
                 else:
                     logger.info('Host %s has no need to update its mac filter rule' % self.hostname)
                 return
         else:
-            logger.info('Activate Wifi mac filtering on host %s - state: %s' % (self.hostname, self.macfilter))
+            logger.info('Activate Wifi mac filtering on host %s - state: %s' % (self.hostname, convert[self.macfilter]))
             api.get_str('POST', '/wireless/acl/rules?btoken=', {'enable': convert[self.macfilter],'macaddress': self.macaddress})
 
     def get_query_host(self, remove_id = False):
@@ -96,22 +95,23 @@ class HostManager:
     PARAMS:
         logger, (MANDATORY), a logger object for printing info message
         api, (MANDATORY), an API object used for updating the BBox
-        hosts, list of hosts to create/update a DHCP reservation/ mac filtering rule/ access control rule
+        hosts, list of hosts to create/update a DHCP reservation/ mac filtering rule/ parental access control rule
     '''
     __slots__ = ['logger', 'api', 'conf', 'hosts']
 
     def __init__(self, logger, api, hosts):
+        convert = ('disabled', 'enabled')
         self.logger = logger
         self.api = api
         self.conf = hosts.pop('conf')
         self.hosts = hosts
         self.apply_lan()
         self.apply_dhcp()
-        self.logger.info('Update WiFi MAC Filtering, state: %i' % self.conf['macfilter'])
+        self.logger.info('Update WiFi MAC Filtering, state: %s' % convert[self.conf['macfilter']])
         self.api.get_str('PUT', '/wireless/acl', {'enable':self.conf['macfilter']})
-        self.logger.info('Update DynDNS, state: %i' % self.conf['dyndns'])
+        self.logger.info('Update DynDNS, state: %s' % convert[self.conf['dyndns']])
         self.api.get_str('PUT', '/dyndns', {'enable':self.conf['dyndns']})
-        self.logger.info('Change the LED luminosity, state: %i' % self.conf['led'])
+        self.logger.info('Change the LED luminosity, state: %s' % convert[self.conf['led']])
         self.api.get_str('PUT', '/device/display', {'luminosity': self.conf['led'] * 100})
 
     def apply_dhcp(self):
@@ -137,22 +137,22 @@ class HostManager:
         Method which changes the LAN information on the BBOX
         WARNING: if the Class C subnet is changed, the BBox reboots
         '''
-        iprange = ipaddress.ip_network(self.conf['lan'])
-        state = json.loads(self.api.get_str('GET', '/lan/ip').decode('utf-8').strip('[]'))
-        current_range = (state['lan']['ip']['ipaddress'], state['lan']['ip']['netmask'])
-        if iprange != ipaddress.ip_network('/'.join(current_range), False):
-            self.logger.info('LAN CIDR %s needs to be updated' % self.conf['lan'])
-            self.api.get_str('PUT', '/lan', {'ipaddress':iprange[0] + '-' + iprange[-1]})
-            self.logger.warning('BBox needs to be rebooted, re run the script after complete. Dont forget to update your .bbox.config file with new IP: https://%s' % self.conf['lan_router_ip'])
+        state = json.loads(self.api.get_str('GET', '/lan/ip').decode('utf-8').strip('[]'))['lan']['ip']
+        if self.conf['lan_router_ip'] != state['ipaddress']:
+            self.logger.info('LAN router IP %s needs to be updated' % self.conf['lan_router_ip'])
+            self.api.get_str('PUT', '/lan', {'ipaddress':self.conf['lan_router_ip']})
+            self.logger.warning('BBox needs to be rebooted, disconnect and reconnect your device from LAN/WiFi, re run the script after complete')
             self.api.get_str('POST', '/device/reboot?btoken=')
             exit (0)
         else:
-            self.logger.info('LAN CIDR %s has no need to be updated' % self.conf['lan'])
+            self.logger.info('LAN Router IP %s has no need to be updated' % self.conf['lan_router_ip'])
 
     def deploy(self):
         '''
         Method which creates/updates each host in inventory file, host section 
         '''
+        self.logger.info('---------- SECTION Host, DHCP, LAN, ... ----------')
         for host in self.hosts:
             oHost = Host(host, **self.hosts[host])
             oHost.create_or_update(self.logger, self.api)
+        self.logger.info('---------- END SECTION Host, DHCP, LAN, ... ----------')

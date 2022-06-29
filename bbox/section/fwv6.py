@@ -50,11 +50,12 @@ class Fwv6Manager:
     __slots__ = ['logger', 'api', 'conf', 'rules']
 
     def __init__(self, logger, api, rules):
+        convert = ('disabled', 'enabled')
         self.logger = logger
         self.api = api
         self.conf = rules.pop('conf')
         self.rules = rules
-        self.logger.info('Update Firewallv6 state: %i' % self.conf['enable'])
+        self.logger.info('Update Firewallv6 state: %s' % convert[self.conf['enable']])
         self.api.get_str('PUT', '/firewall', {'enable':self.conf['enable']})
 
     def delete_all(self):
@@ -72,8 +73,11 @@ class Fwv6Manager:
         Method which creates IPv6 firewall rule
         '''
         i = 1
+        self.logger.info('---------- SECTION Firewall IPv6 ----------')
+        self.logger.info('Remove all previous rules in Firewall IPv6')
         self.delete_all()
         for rule in self.rules:
             oRule = FWv6(description = rule, order = i, **self.rules[rule])
             oRule.create(self.logger, self.api)
             i += 1
+        self.logger.info('---------- END SECTION Firewall IPv6 ----------')

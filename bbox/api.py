@@ -33,7 +33,7 @@ class BBoxAPI:
         components = urllib.parse.urlparse(url)
 
         if components[0] != 'https':
-            logger.error ('URL scheme must be https://')
+            logger.error ('API : URL scheme must be https://')
             raise
 
         self.cookie = None
@@ -45,7 +45,7 @@ class BBoxAPI:
         cookie = status is not None and status['set-cookie'] or None
 
         if cookie is None:
-            self.logger.error ('cannot authenticate to API (wrong password?)')
+            self.logger.error ('API : cannot authenticate to API (wrong password?)')
             raise
 
         self.cookie = cookies.BaseCookie ()
@@ -79,7 +79,7 @@ class BBoxAPI:
             jtoken = json.loads (response)
             token = jtoken[0]['device']['token']
             if token is None:
-                self.logger.warning ('cannot get device token')
+                self.logger.warning ('API : cannot get device token')
                 return {}
             path = path + token
 
@@ -97,6 +97,6 @@ class BBoxAPI:
         response = request.content
 
         if request.status_code != 200:
-            self.logger.warning ('call {0} {1} returned {2} and {3} !!!'.format (method, path, status, response))
+            self.logger.warning ('API : call {0} {1} returned {2} and {3} !!!'.format (method, path, status, response))
             return None, None
         return status, response

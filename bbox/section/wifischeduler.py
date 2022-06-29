@@ -38,19 +38,22 @@ class WifischedulerManager:
     __slots__ = ['logger', 'api', 'conf', 'rules']
 
     def __init__(self, logger, api, rules):
+        convert = ('disabled', 'enabled')
         self.logger = logger
         self.api = api
         self.conf = rules.pop('conf')
         self.rules = rules
-        self.logger.info('Update Wifi Scheduler state : %i' % self.conf['enable'])
+        self.logger.info('Update WiFi Scheduler state : %s' % convert[self.conf['enable']])
         self.api.get_str('PUT', '/wireless/scheduler', {'enable':self.conf['enable']})
 
     def deploy(self):
         '''
         Method which deploys WiFi Scheduler rule from inventory file
         '''
+        self.logger.info('---------- SECTION WiFi Scheduler ----------')
         self.logger.info('Remove all previous rules in WiFi Scheduler')
         self.api.get_str('POST', '/wireless/scheduler?btoken=', {'enable':0,'start':'Sunday 0:00','end':'Saturday 23:59'})
         for rule in self.rules:
             oRule = Scheduler(**self.rules[rule])
             oRule.create(self.logger, self.api, 'Wifi', 'wireless')
+        self.logger.info('---------- END SECTION WiFi Scheduler ----------')

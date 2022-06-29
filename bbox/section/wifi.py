@@ -105,8 +105,10 @@ class WifiManager:
 
     def deploy(self):
         '''
-        Method which deploys wifis from inventory file
+        Method which deploys wifis in inventory file
         '''
+        self.logger.info('---------- SECTION WiFi, WPS ----------')
         for wifi in self.wifis:
             oWiFi = WiFi(ssid = wifi, **self.wifis[wifi])
             oWiFi.update(self.logger, self.api)
+        self.logger.info('---------- END SECTION WiFi, WPS ----------')
