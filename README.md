@@ -2,7 +2,7 @@
 Petit script python3 pour controler l'API bbox (Bouygues Telecom box)
 
 Pour retrouver l'ensemble des fonctions disponibles de l'API, se rendre sur
-https://api.bbox.fr/doc/apirouter/
+[API BBox](https://api.bbox.fr/doc/apirouter/)
 
 # Pre requis
 Python >= 3.10
@@ -61,8 +61,32 @@ bbox_cli.py raw POST api/v1/hosts/7?btoken= "action=wakeup"
 bbox_cli.py apply /root/inventory [-l limit]
 ```
 
-Voir le fichier inventory.example pour voir toutes les possibilites offertes par cette nouvelle fonctionnalite
+Voir le fichier inventory.example pour voir toutes les possibilites
+offertes par cette nouvelle fonctionnalite
 
-Plus de doc a venir sur le sujet
+Voir egalement le fichier inventory.readme pour avoir toutes les
+explications sur la facon de gerer votre propre inventaire et voir
+toutes les fonctionnalites deja developpees (ou pas)
+
+# Notes
+J'ai commence ce projet en 2021. Au depart, je voulais surtout avoir acces a
+quelques commandes sans avoir besoin d'activer le remote sur la BBox (pas secure),
+c'est la partie "raw" du script.
+
+J'avais deja dans l'idee de faire comme avec Ansible : avoir 1 inventaire ou
+je decris l'etat de mon infra et je l'applique. Mais comme tout geek
+normalement constitue, j'ai eu la flemme. Puis, j'ai lu un article du blog de
+@Korben en partenariat avec talent.io [voir ici](https://korben.info/articles/astuces-python)
+sur les bonnes pratiques de Python. Cela plus la petite etoile qui fait plaisir,
+ca m'a donne des ailes pour developper davantage ce script qui est parfait
+pour mes besoins. Ah et non, je ne ferai pas comme avec OVH, je ne prevois
+pas de developper un module pour Ansible. Surtout parce que je ne souhaite
+pas installer Ansible sur la machine qui deploiera cet inventaire.
+
+Je ne suis pas developpeur Python "professionnel", juste sysadmin/devops toujours
+passionne par le code. J'ai fait de mon mieux pour faire de ce programme quelque 
+chose de propre et facilement maintenable. Mais si vous saignez des yeux en lisant
+mon code, toutes mes confuses. N'hesitez pas a faire des PR ou me faire part
+de vos commentaires, il est tres probable que ce soit integre dans ce code aussi
 
 

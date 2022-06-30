@@ -8,10 +8,10 @@ mywifi id=24 passphrase= unified=2 radio=11bgn
 MYWIFI id=5 passphrase= unified=2 radio=11ac
 
 [host enable=1 macfilter=1 lan_router_ip=192.168.1.254 lan_prefix=192.168.1. lan=192.168.1.0/24 led=0 dyndns=0 dhcp_subnet=192.168.1.100-192.168.1.120 dhcp_lease=86400]
-host-wifi macaddress=08:cc:27:c3:d9:9b ipaddress={{host.conf.lan_prefix}}24 macfilter=on
+host-wifi macaddress=08:cc:27:c3:d9:9b ipaddress={{host.conf.lan_prefix}}24 macfilter=1
 bastion macaddress=b8:27:eb:f7:a5:f7 ipaddress={{host.conf.lan_prefix}}25
 file macaddress=08:69:69:69:69:69 ipaddress={{host.conf.lan_prefix}}40
-tv macaddress=cc:7e:e7:28:1f:49 ipaddress={{host.conf.lan_prefix}}30 access_control=on
+tv macaddress=cc:7e:e7:28:1f:49 ipaddress={{host.conf.lan_prefix}}30 access_control=1
 
 [fwv4 enable=1 gamer_mode=0 ping_responder=0]
 #General

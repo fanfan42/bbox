@@ -1,0 +1,156 @@
+# General
+# -------
+# Le fichier d'inventaire permet de decrire l'etat que vous souhaitez sur votre
+# parc
+# L'inventaire et le code ne gerent pas toutes les fonctionnalites du routeur.
+# Pour l'instant:
+#   - Wifi ainsi que l'etat du WPS
+#   - DHCP/LAN (host), l'etat des LED, l'etat du DynDNS, l'etat du filtrage MAC
+# du Wifi
+#   - NAT, l'etat de la DMZ, l'etat de l'UPnP
+#   - Les firewall IPv4 et IPv6 (fwv4 et fwv6), l'etat du gamer mode et l'etat
+# du ping responder
+#   - Controle parental (accesscontrol)
+#   - Le scheduler WiFi (wifischeduler)
+# Ce mode de configuration ne gere pas:
+#   - Les regles DynDNS
+#   - Les regles UPnP/DMZ
+#   - Le backup
+#   - La VOIP
+#   - Le WOL
+#   - Le port USB (mais je la developperai prochainement)
+#   - La partie User Account
+#   - Les "services" (Notification)
+#   - La BBox en remote
+#   - Les autres sections de https://api.bbox.fr/doc/apirouter/index.html
+# Mais le mode brut (raw) du script permet evidemment de configurer ce qu'il
+# vous plait. Vous n'etes pas oblige de decrire toutes les sections gerees par
+# le programme, si, par exemple, seul le WiFi vous interesse, alors votre
+# inventaire ne contiendra que cette section. Evidemment, si vous creez de
+# nouvelles sections non gerees par le script, il vous renverra une erreur.
+# Une documentation specifique sera bientot ecrite pour permettre a ceux qui le
+# souhaitent pour gerer les autres fonctionalites de la BBox.
+# Enfin, ce mode de configuration autorise les templates de valeur (sauf dans
+# les sections [section action=...]). Une valeur peut alors etre remplacee par
+# {{section.item.attrib}}, voir les exemples dans inventory.example. Si vous
+# souhaitez recuperer la valeur d'un parametre de section, ils sont tous stockes
+# dans l'item 'conf' de chaque section, exemple: {{host.conf.lan}} ira prendre
+# sa valeur dans : [host ... lan=192.168.1.0/24 ...] et sera donc traduite par :
+# 192.168.1.0/24
+# ATTENTION, le parser est sensible aux espaces. Enfin, il n'est pas possible de
+# recuperer la valeur d'une variable non declaree precedemment
+
+# wifi decrit le ou les Wifis que vous souhaitez configurer sur la bbox. La
+# section prend 2 parametres obligatoires:
+# enable, vaut 0 (wifi eteint) ou 1 (wifi allume)
+# wps, vaut 0 (inactif) ou 1 (actif)
+# La bbox permet de configurer 2 modes Wifi, 1 unique (One Band) pour le 2.4GHz
+# et le 5GHz ou 2 wifis separes (Two Bands) avec un SSID pour chaque Wifi
+# Il serait possible d'avoir 2 wifi avec le meme SSID mais je ne l'ai pas teste
+# Vous n'etes pas oblige de renseigner les Passphrase des Wifi, le programme
+# vous les demandera pendant l'execution
+# Je ne detaillerai pas les differents parametres, ils sont tous decrits ici:
+# https://api.bbox.fr/doc/apirouter/index.html#api-Wi_Fi-put_v1_wireless_id
+# Il n'y a qu'un seul parametre non gere par cette section : htbw
+# Les seuls parametres obligatoires sont ssid, id, passphrase, unified et radio
+# unified peut valoir 1 ou 2 et determine si vous voulez 1 seul wifi ou 2
+# Les autres parametres sont instanties avec leurs valeurs par defaut
+[wifi enable=1 wps=0]
+#2.4 GHz
+ssid id=24 passphrase= unified=2 radio=11bgn security=WPA+WPA2 enable=1 channel=0 encryption=AES hidden=0
+#5 GHz
+SSID id=5 passphrase= unified=2 radio=11ac security=WPA+WPA2 enable=1 channel=0 encryption=AES hidden=0 greenap=0 dfs=1
+
+# host decrit votre parc informatique et la facon dont vous souhaitez gerer les
+# reservations DHCP de vos machines, leurs autorisations sur le WiFi (macfilter)
+# et leurs autorisations dans le controle parental
+# Il controle aussi la configuration DHCP (sauf les options DHCP) et le LAN
+# Les parametres obligatoires de la section sont :
+# enable : vaut 0 (reservation DHCP desactivee) ou 1
+# macfilter : vaut 0 (Filtrage MAC Wifi desactive) ou 1
+# lan_router_ip : l'adresse IP de votre router dans le LAN
+# lan_prefix : le prefix de votre LAN en Class C soit 'xxx.yyy.zzz.'
+# lan : le LAN que souhaitez, par defaut, la BBox attribue 192.168.1.0/24
+# led : l'etat des LED de la BBox, 0 pour eteintes ou 1
+# dyndns : l'etat du service DynDNS, 0 pour inactif ou 1
+# dhcp_subnet : la part de votre LAN reservee pour le DHCP, ex: 192.168.1.100-192.168.1.120
+# dhcp_lease : le lease time d'une reservation DHCP en secondes
+# Pour chaque host, voici les parametres obligatoires
+# (https://api.bbox.fr/doc/apirouter/index.html#api-DHCP-put_v1_dhcp_clients_id)
+# hostname : le nom que vous souhaitez pour votre machine
+# macaddress : l'adresse MAC de votre equipement
+# ipaddress : l'IP souhaitee pour le device
+# Autres parametres optionnels:
+# enable : par defaut, vaut 1 pour creer la reservation DHCP 
+# macfilter : par defaut, vaut 0 pour ne pas ajouter la machine connectee en
+# WiFi dans le filtrage mac
+# access_control : par defaut, vaut 0 pour ne pas ajouter la machine dans le
+# controle d'acces parental
+[host enable=1 macfilter=1 lan_router_ip=192.168.1.254 lan_prefix=192.168.1. lan=192.168.1.0/24 led=0 dyndns=0 dhcp_subnet=192.168.1.100-192.168.1.120 dhcp_lease=86400]
+hostname macaddress=08:cc:27:c3:e9:9b ipaddress={{host.conf.lan_prefix}}24 macfilter=1 access_control=1 enable=1
+
+# fwv4 decrit la section reservee aux regles du Pare Feu IPv4
+# Il controle aussi l'etat du gamer mode et du ping responder
+# Les parametres obligatoires de la section sont :
+# description : Le nom de votre regle Firewall, juste minuscules, majuscules et chiffres
+# protocols : le ou les protocols reseaux de votre regle Firewall
+# enable : vaut 0 (Firewall desactive) ou 1
+# gamer_mode : vaut 0 (Gamer mode desactive) ou 1
+# ping_responder : vaut 0 (le ping externe n'est pas autorise) ou 1
+# Chaque regle est executee dans l'ordre de vos declarations
+# Les parametres obligatoires de chaque regle sont :
+# description : le nom de votre regle
+# protocols : le(s) protoxole(s) reseaux concernes (TCP et/ou UDP)
+# Les autres parametres optionnels sont decrits sur ce lien:
+# https://api.bbox.fr/doc/apirouter/index.html#api-Firewall-put_v1_firewall_create
+
+[fwv4 enable=1 gamer_mode=0 ping_responder=0]
+description dstports= protocols=udp,tcp enable=1 srcip= srcipnot=0 srcports= srcportnot=0 dstip= dstipnot=0 dstportnot=0 enable=1 action=Accept 
+
+# fwv6 decrit la section reservee aux regles firewall IPv6
+# Voir la section fwv4
+[fwv6 enable=1]
+description dstports= protocols=udp,tcp enable=1 srcip= srcipnot=0 srcports= srcportnot=0 dstip= dstipnot=0 dstportnot=0 enable=1 action=Accept ipprotocol=IPv6 dstmacs= dstmacnot=0 srcmacnot=0
+
+# nat decrit la section des regles NAT de la BBox
+# ca controle aussi l'etat de la DMZ et de l'UPnP
+# Les parametres obligatoires de la section sont :
+# enable : 0 (desactive le service NAT) ou 1
+# dmz : 0 (desactive la DMZ) ou 1
+# upnp : 0 (desactive le service UPnP) ou 1
+# L'ensemble des parametres applicables sont a cette addresse (dans la partie 'rules'):
+# https://api.bbox.fr/doc/apirouter/index.html#api-NAT_PMP-GetNatRules
+# Pour chaque regle NAT, voici les parametres obligatoires
+# description : le nom de la regle NAT
+# protocol : tcp, udp, esp, all
+# internalip : l'IP LAN de la machine visee
+# internalport : le port de la machine visee
+# Les autres parametres sont optionnels
+[nat enable=1 dmz=0 upnp=0]
+description protocol=tcp externalport= internalip=192.168.1.15 internalport=22 externalip= enable=1
+
+# wifischeduler decrit la section du temps ou le wifi est coupe
+# 1 seul parametre de section obligatoire :
+# enable : 0 (desactive le scheduler Wifi) ou 1
+# pour les regles du scheduler, seuls les parametres start et end sont obligatoires
+# la description (description) ne sert que pour le parser
+# Les parametres du scheduler sont a cette adresse :
+# https://api.bbox.fr/doc/apirouter/index.html#api-Wi_Fi-post_v1_wireless_id
+# Seule particularite, il faut separer le jour et l'heure avec un '_' au lieu
+# d'un ' ' 
+[wifischeduler enable=1]
+description start=Monday_1:00 end=Monday_7:00
+
+# accesscontrol decrit la section du temps ou le controle parental est actif
+# 2 parametres de section obligatoires:
+# enable : 0 (desactive le controle parental) ou 1
+# policy : Accept ou Forbidden, cela precise quand 1 nouvelle machine rentre sur le
+# LAN quelle politique appliquer pour le controle parental. Par defaut, la BBox
+# met les nouveaux equipements en Forbidden, ce qui interdit l'acces Internet
+# a ces nouvelles machines
+# les parametres de chaque regle se trouvent a cette adresse :
+# https://api.bbox.fr/doc/apirouter/index.html#api-ParentalControl-post_v1_parentalcontrol_scheduler
+# les regles de cette section sont exactement pareilles a celle de wifischeduler
+# Voir cette section pour d'autres precisions
+[accesscontrol enable=1 policy=Forbidden]
+description start=Sunday_0:00 end=Saturday_23:59
