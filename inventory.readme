@@ -7,7 +7,7 @@
 #   - Wifi ainsi que l'etat du WPS
 #   - DHCP/LAN (host), l'etat des LED, l'etat du DynDNS, l'etat du filtrage MAC
 # du Wifi
-#   - NAT, l'etat de la DMZ, l'etat de l'UPnP
+#   - nat, l'etat de la DMZ, l'etat de l'UPnP
 #   - Les firewall IPv4 et IPv6 (fwv4 et fwv6), l'etat du gamer mode et l'etat
 # du ping responder
 #   - Controle parental (accesscontrol)
@@ -92,17 +92,16 @@ hostname macaddress=08:cc:27:c3:e9:9b ipaddress={{host.conf.lan_prefix}}24 macfi
 # fwv4 decrit la section reservee aux regles du Pare Feu IPv4
 # Il controle aussi l'etat du gamer mode et du ping responder
 # Les parametres obligatoires de la section sont :
-# description : Le nom de votre regle Firewall, juste minuscules, majuscules et chiffres
-# protocols : le ou les protocols reseaux de votre regle Firewall
 # enable : vaut 0 (Firewall desactive) ou 1
 # gamer_mode : vaut 0 (Gamer mode desactive) ou 1
 # ping_responder : vaut 0 (le ping externe n'est pas autorise) ou 1
 # Chaque regle est executee dans l'ordre de vos declarations
 # Les parametres obligatoires de chaque regle sont :
 # description : le nom de votre regle
-# protocols : le(s) protoxole(s) reseaux concernes (TCP et/ou UDP)
+# protocols : le(s) protoxole(s) reseaux concernes (tcp et/ou udp)
 # Les autres parametres optionnels sont decrits sur ce lien:
 # https://api.bbox.fr/doc/apirouter/index.html#api-Firewall-put_v1_firewall_create
+# Note: Il n'est pas possible d'activer le FW v4 et deaactiver le v6 ou vice versa
 
 [fwv4 enable=1 gamer_mode=0 ping_responder=0]
 description dstports= protocols=udp,tcp enable=1 srcip= srcipnot=0 srcports= srcportnot=0 dstip= dstipnot=0 dstportnot=0 enable=1 action=Accept 
