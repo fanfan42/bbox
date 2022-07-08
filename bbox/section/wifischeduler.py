@@ -38,11 +38,13 @@ class WifischedulerManager:
     __slots__ = ['logger', 'api', 'conf', 'rules']
 
     def __init__(self, logger, api, rules):
-        convert = ('disabled', 'enabled')
         self.logger = logger
         self.api = api
         self.conf = rules.pop('conf')
         self.rules = rules
+
+    def conf_section(self):
+        convert = ('disabled','enabled')
         self.logger.info('Update WiFi Scheduler state : %s' % convert[self.conf['enable']])
         self.api.get_str('PUT', '/wireless/scheduler', {'enable':self.conf['enable']})
 

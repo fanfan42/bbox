@@ -100,7 +100,10 @@ class WifiManager:
         self.api = api
         self.conf = wifis.pop('conf')
         self.wifis = wifis
-        self.logger.info('Update WiFi and WPS states: WiFi : %i | WPS : %i' % (self.conf['enable'], self.conf['wps']))
+
+    def conf_section(self):
+        convert = ('disabled','enabled')
+        self.logger.info('Update WiFi and WPS states: WiFi : %s | WPS : %s' % (convert[self.conf['enable']], convert[self.conf['wps']]))
         self.api.get_str('PUT', '/wireless', {'enable':self.conf['enable'],'enable':self.conf['wps']})
 
     def deploy(self):

@@ -15,11 +15,13 @@ class AccesscontrolManager:
     __slots__ = ['logger', 'api', 'conf', 'rules']
 
     def __init__(self, logger, api, rules):
-        convert = ('disabled','enabled')
         self.logger = logger
         self.api = api
         self.conf = rules.pop('conf')
         self.rules = rules
+
+    def conf_section(self):
+        convert = ('disabled','enabled')
         self.logger.info('Update Parental Access Control Scheduler, state : %s | policy: %s' % (convert[self.conf['enable']], self.conf['policy']))
         self.api.get_str('PUT', '/parentalcontrol', {'enable':self.conf['enable'],'defaultpolicy':self.conf['policy']})
 

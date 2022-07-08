@@ -100,11 +100,13 @@ class HostManager:
     __slots__ = ['logger', 'api', 'conf', 'hosts']
 
     def __init__(self, logger, api, hosts):
-        convert = ('disabled', 'enabled')
         self.logger = logger
         self.api = api
         self.conf = hosts.pop('conf')
         self.hosts = hosts
+
+    def conf_section(self):
+        convert = ('disabled','enabled')
         self.apply_lan()
         self.apply_dhcp()
         self.logger.info('Update WiFi MAC Filtering, state: %s' % convert[self.conf['macfilter']])

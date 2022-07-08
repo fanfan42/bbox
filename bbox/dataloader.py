@@ -15,7 +15,7 @@ class DataLoader:
         logger, (MANDATORY) a logger object to report messages during parsing
         inventory, (MANDATORY) a file with the state wanted for the BBox
     '''
-    __slots__ = ['logger', 'data']
+    __slots__ = ['logger', 'data', 'inventory']
 
     def __init__ (self, logger, inventory):
         self.logger = logger
@@ -23,14 +23,7 @@ class DataLoader:
         if not os.path.isfile(inventory):
             self.logger.error("DataLoader : invalid filename: '%s'" % inventory)
             raise
-        parser = RawConfigParser(delimiters=(' '))
-        parser.optionxform = str
-        try:
-            parser.read(inventory)
-        except ParsingError:
-            self.logger.error("DataLoader : INI Inventory cannot be parsed")
-            raise
-        self._refine_data(parser._sections)
+        self.inventory = inventory
 
     def _to_int(self, string):
         '''
@@ -81,6 +74,15 @@ class DataLoader:
         '''
         Method which returns the final data to be deployed
         '''
+        if not len(self.data):
+            parser = RawConfigParser(delimiters=(' '))
+            parser.optionxform = str
+            try:
+                parser.read(self.inventory)
+            except ParsingError:
+                self.logger.error("DataLoader : INI Inventory cannot be parsed")
+                raise
+            self._refine_data(parser._sections)
         return self.data
 
 class Config:
@@ -106,6 +108,6 @@ class Config:
                 try2 = 'b'
                 while try1 != try2:
                     try1 = getpass('Enter password for BBox API : ')
-                    try2 = getpass('Re-enter passphrase for BBox API : ')
+                    try2 = getpass('Re-enter password for BBox API : ')
                 self.password = try1
             self.url = parser._sections['info']['url']

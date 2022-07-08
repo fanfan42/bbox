@@ -29,7 +29,7 @@ class BBoxAPI:
     '''
     __slots__ = ['cookie', 'host', 'logger', 'path']
 
-    def __init__ (self, logger, url, password):
+    def __init__(self, logger, url, password):
         components = urllib.parse.urlparse(url)
 
         if components[0] != 'https':
@@ -48,8 +48,8 @@ class BBoxAPI:
             self.logger.error ('API : cannot authenticate to API (wrong password?)')
             raise
 
-        self.cookie = cookies.BaseCookie ()
-        self.cookie.load (cookie)
+        self.cookie = cookies.BaseCookie()
+        self.cookie.load(cookie)
 
     def get_str (self, method, path, data = None):
         '''

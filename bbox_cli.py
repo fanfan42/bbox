@@ -47,6 +47,7 @@ def deploy_inventory(args):
     for section in data:
         if args.limit is None or section == args.limit:
             manager = getattr(sys.modules[__name__], section.capitalize() + 'Manager')(logger, api, data[section])
+            manager.conf_section()
             manager.deploy()
                 
 def main():
