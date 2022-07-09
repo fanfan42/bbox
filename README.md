@@ -27,33 +27,33 @@ bbox_cli.py raw METHOD PATH [PARAMS]
 Exemples:
 - Recuperer toutes les regles du firewall : 
 ```sh
-bbox_cli.py raw GET api/v1/firewall/rules
+bbox_cli.py raw GET /firewall/rules
 ```
 
 - Mettre a jour la regle firewall dont l'id est 5 depuis la commande precedente : 
 ```sh
-bbox_cli.py raw PUT api/v1/firewall/rules/5 
+bbox_cli.py raw PUT /firewall/rules/5 
 "srcip=8.8.8.8&srcipnot=0&dstip=192.168.1.66&dstipnot=0&srcports=&srcportnot=0&dstports=22&dstportnot=0&order=5&enable=1&protocols=tcp&description=AllowGoogleFromOutsideToSSH&action=Accept"
 ```
 
 - Recuperer les regles NAT:
 ```sh
-bbox_cli.py raw GET api/v1/nat/rules
+bbox_cli.py raw GET /nat/rules
 ```
 
 - Mettre a jour la regle NAT dont l'id est 3 depuis la commande precedente : 
 ```sh
-bbox_cli.py raw PUT api/v1/nat/rules/3 "enable=1&ipremote=8.8.8.8"
+bbox_cli.py raw PUT /nat/rules/3 "enable=1&ipremote=8.8.8.8"
 ```
 
 - Recuperer les machines enregistrees sur la bbox : 
 ```sh
-bbox_cli.py raw GET api/v1/hosts
+bbox_cli.py raw GET /hosts
 ```
 
 - Reveiller (Wake On Lan) la machine dont l'id est 7 depuis la la commande precedente : 
 ```sh
-bbox_cli.py raw POST api/v1/hosts/7?btoken= "action=wakeup"
+bbox_cli.py raw POST /hosts/7?btoken= "action=wakeup"
 ```
 
 # Donner un fichier d'inventaire en parametre
