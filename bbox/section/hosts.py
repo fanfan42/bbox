@@ -23,8 +23,8 @@ class Host:
     ip6address: str = ''
     enable: int = 1
     id: int = -1
-    macfilter: str = 'off'
-    access_control: str = 'off'
+    macfilter: int = 0
+    access_control: int = 0
 
     def create_or_update(self, logger, api):
         '''
