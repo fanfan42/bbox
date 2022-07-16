@@ -16,6 +16,7 @@ from bbox.section.nat import NatManager
 from bbox.section.wifi import WifiManager
 from bbox.section.wifischeduler import WifischedulerManager
 from bbox.section.accesscontrol import AccesscontrolManager
+from bbox.section.dyndns import DyndnsManager
 
 def get_api_and_logger(config_file):
     '''
@@ -62,7 +63,7 @@ def main():
 
     parser_apply = parsers.add_parser('apply', help = 'deploy from inventory file')
     parser_apply.add_argument('file', action = 'store', help = 'Inventory file path', metavar = 'FILE')
-    parser_apply.add_argument('-l', '--limit', required = False, action = 'store', choices=['wifi','host','fwv4','fwv6','nat','wifischeduler','accesscontrol'], help = 'limit apply to a section of the inventory', metavar = 'SECTION')
+    parser_apply.add_argument('-l', '--limit', required = False, action = 'store', choices=['wifi','host','fwv4','fwv6','nat','wifischeduler','accesscontrol','dyndns'], help = 'limit apply to a section of the inventory', metavar = 'SECTION')
     parser_apply.set_defaults(func = deploy_inventory)
 
     args = parser.parse_args()
