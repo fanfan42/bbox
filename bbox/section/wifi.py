@@ -28,6 +28,15 @@ class WiFi:
     greenap: int=0
     hidden: int=0
 
+    def __post_init__(self):
+        if self.passphrase == '':
+            try1 = 'a'
+            try2 = 'b'
+            while try1 != try2:
+                try1 = getpass('Enter passphrase for SSID %s : ' % self.ssid)
+                try2 = getpass('Re-enter passphrase for SSID %s : ' % self.ssid)
+            self.passphrase = try1
+
     def _format(self, raw_data):
         '''
         Internal method to get the equivalent information in a raw GET call for getting actual Wifi configured than the current wifi 
@@ -52,25 +61,12 @@ class WiFi:
             data[i]['unified'] = raw_data['unified']
         return data
 
-    def _get_if_empty_pass(self):
-        '''
-        Internal method which gets the passphrase for a Wifi if let empty in the inventory file
-        '''
-        try1 = 'a'
-        try2 = 'b'
-        while try1 != try2:
-            try1 = getpass('Enter passphrase for SSID %s : ' % self.ssid)
-            try2 = getpass('Re-enter passphrase for SSID %s : ' % self.ssid)
-        return try1
-
     def update(self, logger, api):
         '''
         Method which updates a Wifi configuration
         '''
         global cache_wifi
 
-        if self.passphrase == None or self.passphrase == '':
-            self.passphrase = self._get_if_empty_pass()
         if not cache_wifi:
             cache_wifi = api.get_str('GET', '/wireless').decode('utf-8').strip('[]')
         ssids = self._format(json.loads(cache_wifi)['wireless']) 
