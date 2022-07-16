@@ -12,8 +12,8 @@
 # du ping responder
 #   - Controle parental (accesscontrol)
 #   - Le scheduler WiFi (wifischeduler)
+#   - DynDNS
 # Ce mode de configuration ne gere pas:
-#   - Les regles DynDNS
 #   - Les regles UPnP/DMZ
 #   - Le backup
 #   - La VOIP
@@ -28,8 +28,7 @@
 # le programme, si, par exemple, seul le WiFi vous interesse, alors votre
 # inventaire ne contiendra que cette section. Evidemment, si vous creez de
 # nouvelles sections non gerees par le script, il vous renverra une erreur.
-# Une documentation specifique sera bientot ecrite pour permettre a ceux qui le
-# souhaitent pour gerer les autres fonctionalites de la BBox.
+# Voir add_your_section.README.MD pour developper vos propres sections
 # Enfin, ce mode de configuration autorise les templates de valeur (sauf dans
 # les sections [section action=...]). Une valeur peut alors etre remplacee par
 # {{section.item.attrib}}, voir les exemples dans inventory.example. Si vous
@@ -72,7 +71,6 @@ SSID id=5 passphrase= unified=2 radio=11ac security=WPA+WPA2 enable=1 channel=0 
 # lan_prefix : le prefix de votre LAN en Class C soit 'xxx.yyy.zzz.'
 # lan : le LAN que souhaitez, par defaut, la BBox attribue 192.168.1.0/24
 # led : l'etat des LED de la BBox, 0 pour eteintes ou 1
-# dyndns : l'etat du service DynDNS, 0 pour inactif ou 1
 # dhcp_subnet : la part de votre LAN reservee pour le DHCP, ex: 192.168.1.100-192.168.1.120
 # dhcp_lease : le lease time d'une reservation DHCP en secondes
 # Pour chaque host, voici les parametres obligatoires
@@ -86,7 +84,7 @@ SSID id=5 passphrase= unified=2 radio=11ac security=WPA+WPA2 enable=1 channel=0 
 # WiFi dans le filtrage mac
 # access_control : par defaut, vaut 0 pour ne pas ajouter la machine dans le
 # controle d'acces parental
-[host enable=1 macfilter=1 lan_router_ip=192.168.1.254 lan_prefix=192.168.1. lan=192.168.1.0/24 led=0 dyndns=0 dhcp_subnet=192.168.1.100-192.168.1.120 dhcp_lease=86400]
+[host enable=1 macfilter=1 lan_router_ip=192.168.1.254 lan_prefix=192.168.1. lan=192.168.1.0/24 led=0 dhcp_subnet=192.168.1.100-192.168.1.120 dhcp_lease=86400]
 hostname macaddress=08:cc:27:c3:e9:9b ipaddress={{host.conf.lan_prefix}}24 macfilter=1 access_control=1 enable=1
 
 # fwv4 decrit la section reservee aux regles du Pare Feu IPv4
@@ -101,7 +99,7 @@ hostname macaddress=08:cc:27:c3:e9:9b ipaddress={{host.conf.lan_prefix}}24 macfi
 # protocols : le(s) protoxole(s) reseaux concernes (tcp et/ou udp)
 # Les autres parametres optionnels sont decrits sur ce lien:
 # https://api.bbox.fr/doc/apirouter/index.html#api-Firewall-put_v1_firewall_create
-# Note: Il n'est pas possible d'activer le FW v4 et deaactiver le v6 ou vice versa
+# Note: Il n'est pas possible d'activer le FW v4 et desactiver le v6 ou vice versa
 
 [fwv4 enable=1 gamer_mode=0 ping_responder=0]
 description dstports= protocols=udp,tcp enable=1 srcip= srcipnot=0 srcports= srcportnot=0 dstip= dstipnot=0 dstportnot=0 enable=1 action=Accept 
@@ -153,3 +151,20 @@ description start=Monday_1:00 end=Monday_7:00
 # Voir cette section pour d'autres precisions
 [accesscontrol enable=1 policy=Forbidden]
 description start=Sunday_0:00 end=Saturday_23:59
+
+# dyndns decrit la section ou sont enregistrees les clients qui mettent a jour
+# les serveurs dns capables avec l'IP de la bbox quand elle change
+# Chaque entree dans la section doit commencer par un nom unique
+# 1 seul parametre obligatoire:
+# enable : 0 (desactive le client DynDNS de la BBox) ou 1
+# Les parametres de chaque service se trouvent a cette addresse :
+# https://api.bbox.fr/doc/apirouter/#api-Dynamic_DNS-put_v1_dhcp_options
+# Pour chaque service, voici les parametres obligatoires :
+# host : le sous domaine configure pour changer d'IP
+# server : peut etre dyndns, no-ip, ovh, duiadns, changeip ou duckdns
+# username: le login de connexion au service DynDNS
+# password: le password associe au username. Peut etre vide, le programme
+# vous le demandera alors pendant l'execution
+# Note: le parametre device n'est pas supporte
+[dyndns enable=1]
+host enable=1 server=dyndns username=login password=HelloDyn record=A
