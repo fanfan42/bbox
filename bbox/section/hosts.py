@@ -111,8 +111,6 @@ class HostManager:
         self.apply_dhcp()
         self.logger.info('Update WiFi MAC Filtering, state: %s' % convert[self.conf['macfilter']])
         self.api.get_str('PUT', '/wireless/acl', {'enable':self.conf['macfilter']})
-        self.logger.info('Update DynDNS, state: %s' % convert[self.conf['dyndns']])
-        self.api.get_str('PUT', '/dyndns', {'enable':self.conf['dyndns']})
         self.logger.info('Change the LED luminosity, state: %s' % convert[self.conf['led']])
         self.api.get_str('PUT', '/device/display', {'luminosity': self.conf['led'] * 100})
 
