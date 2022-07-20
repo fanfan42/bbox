@@ -17,6 +17,7 @@ from bbox.section.wifi import WifiManager
 from bbox.section.wifischeduler import WifischedulerManager
 from bbox.section.accesscontrol import AccesscontrolManager
 from bbox.section.dyndns import DyndnsManager
+from bbox.section.device import DeviceManager
 
 def get_api_and_logger(config_file):
     '''
@@ -52,19 +53,20 @@ def deploy_inventory(args):
             manager.deploy()
                 
 def main():
-    parser = argparse.ArgumentParser(description = 'Python3 CLI utility for Bouygues Telecom\'s BBox Miami Router API.')
-    parsers = parser.add_subparsers(help = 'CLI to control BBOx\'s Router')
+    parser = argparse.ArgumentParser(description='Python3 CLI utility for Bouygues Telecom\'s BBox Miami Router API.')
+    parsers = parser.add_subparsers(help='CLI to control BBOx\'s Router')
 
-    parser_raw = parsers.add_parser('raw', help = 'Execute raw command')
-    parser_raw.add_argument('method', action = 'store', help = 'HTTP method', metavar = 'VERB')
-    parser_raw.add_argument('path', action = 'store', help = 'API command', metavar = 'PATH')
-    parser_raw.add_argument('params', action = 'store', nargs = '?', help = 'API command arguments', metavar = 'ARGS')
-    parser_raw.set_defaults(func = raw_api_call)
+    parser_raw = parsers.add_parser('raw', help='Execute raw command')
+    parser_raw.add_argument('method', action='store', help='HTTP method', metavar='VERB')
+    parser_raw.add_argument('path', action='store', help='API command', metavar='PATH')
+    parser_raw.add_argument('params', action='store', nargs='?', help='API command arguments', metavar='ARGS')
+    parser_raw.set_defaults(func=raw_api_call)
 
-    parser_apply = parsers.add_parser('apply', help = 'deploy from inventory file')
-    parser_apply.add_argument('file', action = 'store', help = 'Inventory file path', metavar = 'FILE')
-    parser_apply.add_argument('-l', '--limit', required = False, action = 'store', choices=['wifi','host','fwv4','fwv6','nat','wifischeduler','accesscontrol','dyndns'], help = 'limit apply to a section of the inventory', metavar = 'SECTION')
-    parser_apply.set_defaults(func = deploy_inventory)
+    limits = ('wifi','host','fwv4','fwv6','nat','wifischeduler','accesscontrol','dyndns','device')
+    parser_apply = parsers.add_parser('apply', help='deploy from inventory file')
+    parser_apply.add_argument('file', action='store', help='Inventory file path', metavar='FILE')
+    parser_apply.add_argument('-l', '--limit', required=False, action='store', choices=limits, help='limit apply to a section of the inventory', metavar='SECTION')
+    parser_apply.set_defaults(func=deploy_inventory)
 
     args = parser.parse_args()
     args.func(args)

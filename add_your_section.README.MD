@@ -15,8 +15,8 @@ fichier, il faut rajouter l'import avec les autres, ex:
 ```sh
 from bbox.section.dyndns import DyndnsManager
 ```
-A la ligne parser_apply.add_argument('-l','--limit' ... choices=['wifi','host', ...]...),
-rajouter le nom de la section que vous souhaitez rajouter dans les choices, ex: dyndns
+A la ligne limits = ('wifi','host', ...),
+rajouter le nom de la section, ex: dyndns
 ​
 ## Dans le dossier bbox/section
 Creer un fichier du nom de votre section, ex: dyndns.py
@@ -28,7 +28,7 @@ __metaclass__ = type
 from dataclasses import dataclass, asdict
 ​
 # Dataclass definissant un object de la bbox, ex: Host ou Fwv4 definissant une regle de firewall
-# Les slots ne sont pas obligatoire, c'est plus leger en memoire mais cette option des dataclasses
+# Les slots ne sont pas obligatoires, c'est plus leger en memoire mais cette option des dataclasses
 # n'arrive qu'a la version Python 3.10 ce qui peut en rebuter certains
 @dataclass(slots = True)
 class Object:
@@ -68,7 +68,7 @@ class ObjectManager:
     # Cette methode est obligatoire, elle permet de deployer vos objets bbox, les lignes de chaque section en somme, ex: machine1 ipaddress=192.168.1.30 macaddress=08:69:69:69:69:69 ...
     # Elle ne prend pas de parametres et se contente de traiter les donnees de self.data
 	# Cette fonction cree des Object class pour chaque ligne de la section
-	# Elle peut egalement appeler d'autres fonctions (voir bbox/session/host.py)
+	# Elle peut egalement appeler d'autres fonctions (voir bbox/session/device.py)
     def deploy(self):
         pass
 ```

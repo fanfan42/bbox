@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass,asdict
 
 cache_dhcp = None
-cache_nat = None
+cache_mac = None
 
 @dataclass(slots = True)
 class Host:
@@ -58,25 +58,25 @@ class Host:
         '''
         Method which allows/denies access to Wifi for an host
         '''
-        global cache_nat
+        global cache_mac
         convert = ('disabled', 'enabled')
 
-        if not cache_nat:
-            cache_nat = api.get_str('GET', '/wireless/acl').decode('utf-8').strip('[]')
-        rules = json.loads(cache_nat)['acl']['rules']
+        if not cache_mac:
+            cache_mac = api.get_str('GET', '/wireless/acl').decode('utf-8').strip('[]')
+        rules = json.loads(cache_mac)['acl']['rules']
         for rule in rules:
             if rule['macaddress'] == self.macaddress:
                 if rule['enable'] != convert[self.macfilter]:
                     logger.info('Updating Wifi mac filtering on host %s - state: %s' % (self.hostname, convert[self.macfilter]))
-                    api.get_str('PUT', '/wireless/acl/rules/%s' % rule['id'], {'enable': self.macfilter, 'macaddress': self.macaddress})
+                    api.get_str('PUT', '/wireless/acl/rules/%s' % rule['id'], {'enable':self.macfilter,'macaddress':self.macaddress})
                 else:
                     logger.info('Host %s has no need to update its mac filter rule' % self.hostname)
                 return
         else:
             logger.info('Activate Wifi mac filtering on host %s - state: %s' % (self.hostname, convert[self.macfilter]))
-            api.get_str('POST', '/wireless/acl/rules?btoken=', {'enable': convert[self.macfilter],'macaddress': self.macaddress})
+            api.get_str('POST', '/wireless/acl/rules?btoken=', {'enable':convert[self.macfilter],'macaddress':self.macaddress})
 
-    def get_query_host(self, remove_id = False):
+    def get_query_host(self, remove_id=False):
         '''
         Method which returns params needed for creating/updating an host in DHCP/LAN 
         '''
@@ -107,52 +107,16 @@ class HostManager:
 
     def conf_section(self):
         convert = ('disabled','enabled')
-        self.apply_lan()
-        self.apply_dhcp()
         self.logger.info('Update WiFi MAC Filtering, state: %s' % convert[self.conf['macfilter']])
         self.api.get_str('PUT', '/wireless/acl', {'enable':self.conf['macfilter']})
-        self.logger.info('Change the LED luminosity, state: %s' % convert[self.conf['led']])
-        self.api.get_str('PUT', '/device/display', {'luminosity': self.conf['led'] * 100})
-
-    def apply_dhcp(self):
-        '''
-        Method which changes the DHCP subnet and lease per address
-        '''
-        state = json.loads(self.api.get_str('GET', '/dhcp').decode('utf-8').strip('[]'))
-        to_comp = {
-                'state':self.conf['enable'],
-                'enable':self.conf['enable'],
-                'minaddress':self.conf['dhcp_subnet'].split('-')[0],
-                'maxaddress':self.conf['dhcp_subnet'].split('-')[1],
-                'leasetime':self.conf['dhcp_lease']}
-        if to_comp != state['dhcp']:
-            self.logger.info('DHCP needs to be updated. range: %s | lease: %i sec' % (self.conf['dhcp_subnet'], to_comp['leasetime']))
-            to_comp.pop('state')
-            self.api.get_str('PUT', '/dhcp', to_comp)
-        else:
-            self.logger.info('DHCP server range %s has no need to be updated' % self.conf['dhcp_subnet'])
-
-    def apply_lan(self):
-        '''
-        Method which changes the LAN information on the BBOX
-        WARNING: if the Class C subnet is changed, the BBox reboots
-        '''
-        state = json.loads(self.api.get_str('GET', '/lan/ip').decode('utf-8').strip('[]'))['lan']['ip']
-        if self.conf['lan_router_ip'] != state['ipaddress']:
-            self.logger.info('LAN router IP %s needs to be updated' % self.conf['lan_router_ip'])
-            self.api.get_str('PUT', '/lan', {'ipaddress':self.conf['lan_router_ip']})
-            self.logger.warning('BBox needs to be rebooted, disconnect and reconnect your device from LAN/WiFi, re run the script after complete')
-            self.api.get_str('POST', '/device/reboot?btoken=')
-            exit (0)
-        else:
-            self.logger.info('LAN Router IP %s has no need to be updated' % self.conf['lan_router_ip'])
 
     def deploy(self):
         '''
-        Method which creates/updates each host in inventory file, host section 
+        Method which creates/updates DHCP reservation (and more)
+        on each host in inventory file, host section 
         '''
-        self.logger.info('---------- SECTION Host, DHCP, LAN, ... ----------')
+        self.logger.info('---------- SECTION Host ----------')
         for host in self.hosts:
             oHost = Host(host, **self.hosts[host])
             oHost.create_or_update(self.logger, self.api)
-        self.logger.info('---------- END SECTION Host, DHCP, LAN, ... ----------')
+        self.logger.info('---------- END SECTION Host ----------')

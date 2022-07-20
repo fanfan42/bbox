@@ -5,14 +5,15 @@
 # L'inventaire et le code ne gerent pas toutes les fonctionnalites du routeur.
 # Pour l'instant:
 #   - Wifi ainsi que l'etat du WPS
-#   - DHCP/LAN (host), l'etat des LED, l'etat du DynDNS, l'etat du filtrage MAC
+#   - DHCP/LAN (device) ainsi que l'etat des LED
+#   - Les macbines du parc (host), l'etat du filtrage MAC
 # du Wifi
 #   - nat, l'etat de la DMZ, l'etat de l'UPnP
 #   - Les firewall IPv4 et IPv6 (fwv4 et fwv6), l'etat du gamer mode et l'etat
 # du ping responder
 #   - Controle parental (accesscontrol)
 #   - Le scheduler WiFi (wifischeduler)
-#   - DynDNS
+#   - DynDNS (dyndns)
 # Ce mode de configuration ne gere pas:
 #   - Les regles UPnP/DMZ
 #   - Le backup
@@ -33,8 +34,8 @@
 # les sections [section action=...]). Une valeur peut alors etre remplacee par
 # {{section.item.attrib}}, voir les exemples dans inventory.example. Si vous
 # souhaitez recuperer la valeur d'un parametre de section, ils sont tous stockes
-# dans l'item 'conf' de chaque section, exemple: {{host.conf.lan}} ira prendre
-# sa valeur dans : [host ... lan=192.168.1.0/24 ...] et sera donc traduite par :
+# dans l'item 'conf' de chaque section, exemple: {{fwv4.conf.lan}} ira prendre
+# sa valeur dans : [fwv4 ... lan=192.168.1.0/24 ...] et sera donc traduite par :
 # 192.168.1.0/24
 # ATTENTION, le parser est sensible aux espaces. Enfin, il n'est pas possible de
 # recuperer la valeur d'une variable non declaree precedemment
@@ -60,19 +61,34 @@ ssid id=24 passphrase= unified=2 radio=11bgn security=WPA+WPA2 enable=1 channel=
 #5 GHz
 SSID id=5 passphrase= unified=2 radio=11ac security=WPA+WPA2 enable=1 channel=0 encryption=AES hidden=0 greenap=0 dfs=1
 
+# device decrit votre serveur DHCP, l'IP dans le LAN de votre bbox et
+# l'etat des LED 
+# Les parametres obligatoires de la section sont :
+# enable : vaut 0 (serveur DHCP desactive) ou 1
+# lan_router_ip : l'adresse IP de votre router dans le LAN
+# lan_prefix : le prefix de votre LAN en Class C soit 'xxx.yyy.zzz.'
+# led : l'etat des LED de la BBox, 0 pour eteintes ou 1
+# dhcp_subnet : la part de votre LAN reservee pour le DHCP, ex: 192.168.1.100-192.168.1.120
+# Optionnel: dhcp_lease : le lease time d'une reservation DHCP en secondes
+# Pour chaque option DHCP, voici les parametres obligatoires
+# (https://api.bbox.fr/doc/apirouter/#api-DHCP-post_v1_dhcp_options)
+# name : le nom de l'option DHCP en int, voir bbox_cli.py raw GET /dhcp/options
+# pour la liste complete des options suppotees par la BBox
+# value : la valeur de votre option
+# Autres parametres optionnels:
+# enable : par defaut, vaut 1 pour creer la reservation DHCP 
+# description : n'existe pas dans la doc, c'est pour donner plus de 
+# visibilite sur le nom de l'option 
+# format : ? l'api bbox l'envoie dans sa requete mais a toujours valu ''
+[device enable=1 led=0 lan_router_ip=192.168.1.254 dhcp_subnet=192.168.1.100-192.168.1.120 lan_prefix=192.168.1.]
+6 value={{device.conf.lan_prefix}}28 description=domain_name_server
+119 value=lan description=DNS_domain_search_list
+
 # host decrit votre parc informatique et la facon dont vous souhaitez gerer les
 # reservations DHCP de vos machines, leurs autorisations sur le WiFi (macfilter)
 # et leurs autorisations dans le controle parental
-# Il controle aussi la configuration DHCP (sauf les options DHCP) et le LAN
 # Les parametres obligatoires de la section sont :
-# enable : vaut 0 (reservation DHCP desactivee) ou 1
 # macfilter : vaut 0 (Filtrage MAC Wifi desactive) ou 1
-# lan_router_ip : l'adresse IP de votre router dans le LAN
-# lan_prefix : le prefix de votre LAN en Class C soit 'xxx.yyy.zzz.'
-# lan : le LAN que souhaitez, par defaut, la BBox attribue 192.168.1.0/24
-# led : l'etat des LED de la BBox, 0 pour eteintes ou 1
-# dhcp_subnet : la part de votre LAN reservee pour le DHCP, ex: 192.168.1.100-192.168.1.120
-# dhcp_lease : le lease time d'une reservation DHCP en secondes
 # Pour chaque host, voici les parametres obligatoires
 # (https://api.bbox.fr/doc/apirouter/index.html#api-DHCP-put_v1_dhcp_clients_id)
 # hostname : le nom que vous souhaitez pour votre machine
@@ -84,7 +100,7 @@ SSID id=5 passphrase= unified=2 radio=11ac security=WPA+WPA2 enable=1 channel=0 
 # WiFi dans le filtrage mac
 # access_control : par defaut, vaut 0 pour ne pas ajouter la machine dans le
 # controle d'acces parental
-[host enable=1 macfilter=1 lan_router_ip=192.168.1.254 lan_prefix=192.168.1. lan=192.168.1.0/24 led=0 dhcp_subnet=192.168.1.100-192.168.1.120 dhcp_lease=86400]
+[host macfilter=1]
 hostname macaddress=08:cc:27:c3:e9:9b ipaddress={{host.conf.lan_prefix}}24 macfilter=1 access_control=1 enable=1
 
 # fwv4 decrit la section reservee aux regles du Pare Feu IPv4
@@ -101,7 +117,7 @@ hostname macaddress=08:cc:27:c3:e9:9b ipaddress={{host.conf.lan_prefix}}24 macfi
 # https://api.bbox.fr/doc/apirouter/index.html#api-Firewall-put_v1_firewall_create
 # Note: Il n'est pas possible d'activer le FW v4 et desactiver le v6 ou vice versa
 
-[fwv4 enable=1 gamer_mode=0 ping_responder=0]
+[fwv4 enable=1 gamer_mode=0 ping_responder=0 lan=192.168.1.0/24]
 description dstports= protocols=udp,tcp enable=1 srcip= srcipnot=0 srcports= srcportnot=0 dstip= dstipnot=0 dstportnot=0 enable=1 action=Accept 
 
 # fwv6 decrit la section reservee aux regles firewall IPv6
