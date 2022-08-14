@@ -63,7 +63,7 @@ class BBoxAPI:
 
         if status is not None:
             return response
-        return ''
+        return b''
 
     def query (self, method, short_path, data = None):
         '''
@@ -79,12 +79,15 @@ class BBoxAPI:
             jtoken = json.loads (response)
             token = jtoken[0]['device']['token']
             if token is None:
-                self.logger.warning ('API : cannot get device token')
+                self.logger.error ('API : cannot get device token')
                 return {}
             path = path + token
 
         if data is not None:
-            body = urllib.parse.urlencode (data)
+            if isinstance(data, str):
+                body = urllib.parse.urlencode(urllib.parse.parse_qsl(data))
+            else:
+                body = urllib.parse.urlencode(data)
         else:
             body = None
         if self.cookie is not None:
