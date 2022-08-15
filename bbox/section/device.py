@@ -45,7 +45,7 @@ class DeviceManager:
         convert = ('disabled','enabled')
         iprange = self.conf['dhcp_subnet'].split('-')
         leasetime = self.conf['dhcp_lease'] if 'dhcp_lease' in self.conf else 86400
-        state = json.loads(self.api.get_str('GET', '/lan/ip').decode('utf-8').strip('[]'))['lan']['ip']
+        state = json.loads(self.api.get_str('GET', '/lan/ip'))['lan']['ip']
 
         if self.conf['lan_router_ip'] != state['ipaddress']:
             self.logger.info('LAN router IP %s needs to be updated' % self.conf['lan_router_ip'])
@@ -63,8 +63,7 @@ class DeviceManager:
         '''
         Method which deletes all options in DHCP server
         '''
-        raw = self.api.get_str('GET', '/dhcp/options').decode('utf-8').strip('[]')
-        options = json.loads(raw)['dhcp']['options']
+        options = json.loads(self.api.get_str('GET', '/dhcp/options'))['dhcp']['options']
         for opt in options:
             self.logger.info('Deleting DHCP option %i, value: %s' % (opt['option'], opt['value']))
             self.api.get_str('DELETE', '/dhcp/options/%i' % opt['id'])

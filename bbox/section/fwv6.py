@@ -64,8 +64,7 @@ class Fwv6Manager:
         '''
         Method which deletes all IPv6 firewall rules previously created
         '''
-        raw = self.api.get_str('GET', '/firewallv6/rules').decode('utf-8').strip('[]')
-        rules = json.loads(raw)['firewall']['rules']
+        rules = json.loads(self.api.get_str('GET', '/firewallv6/rules'))['firewall']['rules']
         for rule in rules:
             self.logger.info('Deleting FWv6 rule %s' % rule['description'])
             self.api.get_str('DELETE', '/firewall/rules/%d' % rule['id'])

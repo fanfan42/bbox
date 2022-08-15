@@ -68,7 +68,7 @@ class WiFi:
         global cache_wifi
 
         if not cache_wifi:
-            cache_wifi = api.get_str('GET', '/wireless').decode('utf-8').strip('[]')
+            cache_wifi = api.get_str('GET', '/wireless')
         ssids = self._format(json.loads(cache_wifi)['wireless']) 
         for id in ssids:
             temp_wifi = WiFi(**ssids[id])

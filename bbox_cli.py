@@ -36,7 +36,7 @@ def raw_api_call(args):
     '''
     logger, api = get_api_and_logger('~/.bbox.config')
     logger.info('RAW API call: Method=%s | Path=%s | Params=%s' % (args.method, args.path, args.params))
-    pprint(api.get_str(args.method, args.path, args.params).decode('utf-8').strip('[]'), sort_dicts = False, indent=2)
+    pprint(api.get_str(args.method, args.path, args.params), sort_dicts = False, indent=2)
     
 def deploy_inventory(args):
     '''

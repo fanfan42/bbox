@@ -65,8 +65,7 @@ class Fwv4Manager:
         '''
         Method which deletes all rules in IPv4 Firewall
         '''
-        raw = self.api.get_str('GET', '/firewall/rules').decode('utf-8').strip('[]')
-        rules = json.loads(raw)['firewall']['rules']
+        rules = json.loads(self.api.get_str('GET', '/firewall/rules'))['firewall']['rules']
         for rule in rules:
             self.logger.info('Deleting FWv4 rule %s' % rule['description'])
             self.api.get_str('DELETE', '/firewall/rules/%d' % rule['id'])

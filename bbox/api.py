@@ -62,8 +62,8 @@ class BBoxAPI:
         (status, response) = self.query (method, path, data)
 
         if status is not None:
-            return response
-        return b''
+            return response.decode('utf-8').strip('[]')
+        return ''
 
     def query (self, method, short_path, data = None):
         '''

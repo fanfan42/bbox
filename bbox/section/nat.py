@@ -33,7 +33,7 @@ class NATRule:
         global cache_nat
 
         if not cache_nat:
-            cache_nat = api.get_str('GET', '/nat/rules').decode('utf-8').strip('[]')
+            cache_nat = api.get_str('GET', '/nat/rules')
         rules = json.loads(cache_nat)['nat']['rules']
         for rule in rules:
             self.id = rule['id']

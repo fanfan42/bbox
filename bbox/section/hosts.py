@@ -33,7 +33,7 @@ class Host:
         global cache_dhcp
 
         if not cache_dhcp:
-            cache_dhcp = api.get_str('GET', '/dhcp/clients').decode('utf-8').strip('[]')
+            cache_dhcp = api.get_str('GET', '/dhcp/clients')
         clients = json.loads(cache_dhcp)['dhcp']['clients']
         for host in clients:
             self.id = host['id']
@@ -62,7 +62,7 @@ class Host:
         convert = ('disabled', 'enabled')
 
         if not cache_mac:
-            cache_mac = api.get_str('GET', '/wireless/acl').decode('utf-8').strip('[]')
+            cache_mac = api.get_str('GET', '/wireless/acl')
         rules = json.loads(cache_mac)['acl']['rules']
         for rule in rules:
             if rule['macaddress'] == self.macaddress:

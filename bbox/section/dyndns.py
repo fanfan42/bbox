@@ -42,7 +42,7 @@ class Dyndns:
         global cache_dyndns
 
         if not cache_dyndns:
-            cache_dyndns = api.get_str('GET', '/dyndns').decode('utf-8').strip('[]')
+            cache_dyndns = api.get_str('GET', '/dyndns')
         services = json.loads(cache_dyndns)['dyndns']['domain']
         for service in services:
             self.id = service['id']
