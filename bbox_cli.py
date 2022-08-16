@@ -4,8 +4,10 @@ from __future__ import (absolute_import, division, print_function)
 import argparse
 import os
 import sys
+import json
 
 from pprint import pprint
+from datetime import datetime
 from bbox.logger import Logger
 from bbox.api import BBoxAPI
 from bbox.dataloader import DataLoader, Config
@@ -46,11 +48,31 @@ def deploy_inventory(args):
     logger, api = get_api_and_logger('~/.bbox.config')
     dl = DataLoader(logger, args.file)
     data = dl.get_data()
-    for section in data:
-        if args.limit is None or section == args.limit:
-            manager = getattr(sys.modules[__name__], section.capitalize() + 'Manager')(logger, api, data[section])
-            manager.conf_section()
-            manager.deploy()
+    bkp_name = None
+
+    if len(data) > 0:
+        choices = ('y', 'Y')
+        backup = input("Do you want to make a backup before apply (Default: no) ? (y|N) : ")
+        if backup in choices:
+            bkp_name = 'Backup_' + datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
+            logger.warning('You can only store 2 backups, at the third, the second backup id is deleted')
+            logger.info('Create backup %s' % bkp_name)
+            api.get_str('POST', '/configs?btoken=', {'name':bkp_name})
+        for section in data:
+            if args.limit is None or section == args.limit:
+                manager = getattr(sys.modules[__name__], section.capitalize() + 'Manager')(logger, api, data[section])
+                manager.conf_section()
+                manager.deploy()
+        logger.info('Apply succesfully completed on %s inventory' % args.file)
+        if bkp_name:
+            restore = input('Do you want to restore the previous backup (Default: no)? (y|N) : ')
+            if restore in choices:
+                backups = json.loads(api.get_str('GET', '/configs'))['configs']
+                for bkp in backups:
+                    if bkp['name'] == bkp_name:
+                        logger.info('Restore backup %s' % bkp_name)
+                        api.get_str('POST', '/configs/%i?btoken=' % bkp['id'], {'restore': 1})
+                        break
                 
 def main():
     parser = argparse.ArgumentParser(description='Python3 CLI utility for Bouygues Telecom\'s BBox Miami Router API.')
