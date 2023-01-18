@@ -67,14 +67,14 @@ class Host:
         for rule in rules:
             if rule['macaddress'] == self.macaddress:
                 if rule['enable'] != convert[self.macfilter]:
-                    logger.info('Updating Wifi mac filtering on host %s - state: %s' % (self.hostname, convert[self.macfilter]))
-                    api.get_str('PUT', '/wireless/acl/rules/%s' % rule['id'], {'enable':self.macfilter,'macaddress':self.macaddress})
+                    logger.info('Updating Wifi mac filtering on host %s - state: %s' % (self.hostname, convert[self.enable]))
+                    api.get_str('PUT', '/wireless/acl/rules/%s' % rule['id'], {'enable':self.enable,'macaddress':self.macaddress})
                 else:
                     logger.info('Host %s has no need to update its mac filter rule' % self.hostname)
                 return
         else:
-            logger.info('Activate Wifi mac filtering on host %s - state: %s' % (self.hostname, convert[self.macfilter]))
-            api.get_str('POST', '/wireless/acl/rules?btoken=', {'enable':convert[self.macfilter],'macaddress':self.macaddress})
+            logger.info('Activate Wifi mac filtering on host %s - state: %s' % (self.hostname, convert[self.enable]))
+            api.get_str('POST', '/wireless/acl/rules?btoken=', {'enable':self.enable,'macaddress':self.macaddress})
 
     def get_query_host(self, remove_id=False):
         '''
