@@ -9,7 +9,7 @@ from http import cookies
 from urllib.parse import urlparse
 from urllib import parse
 
-#BBox has a bad dhparam despite update in April 2022
+#BBox has a bad dhparam despite update in January 2023
 requests.packages.urllib3.disable_warnings()
 requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
 try:
